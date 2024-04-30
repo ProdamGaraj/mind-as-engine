@@ -9,9 +9,10 @@ services:
     depends_on:
       - mind-as-engine-backend
     ports:
-      - '80:3000'
+      - '3000:3000'
     networks:
-      - 'default'
+      - 'frontend'
+      - 'backend'
 
   mind-as-engine-backend:
     container_name: mind-as-engine-backend
@@ -26,7 +27,7 @@ services:
     ports:
       - '1337:1337'
     networks:
-      - 'default'
+      - 'backend'
 
   mind-as-engine-database:
     container_name: mind-as-engine-database
@@ -40,4 +41,28 @@ services:
     ports:
       - '5555:5432'
     networks:
-      - 'default'
+      - 'backend'
+
+  twg-proxy:
+    image: valian/docker-nginx-auto-ssl
+    restart: on-failure
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ssl_data:/etc/resty-auto-ssl
+    env_file:
+      - ./environment.env
+  
+    networks:
+      - proxy
+      - frontend
+      - backend
+
+networks:
+  proxy:
+    name: proxy_network
+  frontend:
+    name: frontend_network
+  backend:
+    name: backend_network
